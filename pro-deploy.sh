@@ -21,36 +21,55 @@ git_pull_pro(){
     cd $CODE_DIR && git pull
     API_VERLEN=$(git show | grep commit | cut -d ' ' -f2)
     API_VER=$(echo ${API_VERLEN:0:5})
+    cp -r "$CODE_DIR" "$TMP_DIR"
 }
 
 config_pro(){
+    echo "add Confiure File "
+    /bin/cp -r "$CONFIG_DIR" "$TMP_DIR/demo/"
+    TAR_VER="$API_VER"_"$CTIME"
+    cd "$TMP_DIR" && mv demo pro_demo_$TAR_VER""
 
 }
 
 tar_pro(){
-
+    echo "tar pro art"
+    cd "$TMP_DIR" && tar czf pro_demo_"$TAR_VER".tar.gz pro_demo_"$TAR_VER"
+    echo 'tar finished pro_demo_"$TAR_VER".tar.gz'
 }
 
 scp_pro(){
-
+    #/bin/scp $TMP_DIR/pro_demo_"$TAR_VER".tar.gz $user@$remote_ip:/var/www/html
+    /bin/cp $TMP_DIR/pro_demo_"$TAR_VER".tar.gz /tmp
+    
 
 }
 
 deploy_pro(){
+    echo "start Deploy..."
+    cd /tmp && tar xf pro_demo_"$TAR_VER".tar.gz 
+    rm -rf /var/www/html/demo
+    ln -s /tmp/pro_demo_"$TAR_VER" /var/www/html/demo
+     
+    
 
 }
 
 test_pro(){
-
+    echo "start test"
+    curl -I 127.0.0.1 | grep "200"
+    echo "tet ok"
 
 }
 
 rollback_list(){
-
+    ls -l /tmp/*.tar.gz
 
 }
 
 rollback_pro(){
+    rm -rf /var/www/html/demo
+    ln -s /tmp/$1 /var/www/html/demo
 
 
 }
@@ -61,7 +80,7 @@ main(){
         config_pro;
         tar_pro;
         scp_pro;
-        devploy_pro;
+        deploy_pro;
         test_pro;
         ;;
     rollback-list)
@@ -73,6 +92,6 @@ main(){
     *)
         usage;;
 esac
-
-main $1 $2 
 }
+main $1 $2 
+
